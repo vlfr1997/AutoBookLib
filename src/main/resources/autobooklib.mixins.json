@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.vlfr1997.autobooklib.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+  ],
+  "client": [
+    "ReceiveTradeOfferPacket"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
