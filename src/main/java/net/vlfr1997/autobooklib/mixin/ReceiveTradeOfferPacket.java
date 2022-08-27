@@ -16,7 +16,7 @@ import net.minecraft.network.packet.s2c.play.ItemPickupAnimationS2CPacket;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 import net.minecraft.network.packet.s2c.play.SetTradeOffersS2CPacket;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -54,12 +54,14 @@ abstract class ReceiveTradeOfferPacket {
             if (ebookcount > 0 && (id.equals(AutoBookData.getInfo().getTargetId()) && level == AutoBookData.getInfo().getTargetLevel())) {
                 AutoBookData.getInfo().setWorking(false);
                 AutoBookData.getInfo().setDone(false);
-                MinecraftClient.getInstance().player.sendMessage(new LiteralText("Found: " + id.toString() + Integer.toString(level)), false);
-                MinecraftClient.getInstance().player.sendMessage(new LiteralText("Done"), false);
+                MinecraftClient instance = MinecraftClient.getInstance();
+				instance.player.sendMessage(Text.literal("Found: " + id.toString() + Integer.toString(level)), false);
+                instance.player.sendMessage(Text.literal("Done"), false);
             } else {
                 Direction side = Direction.NORTH;
                 BlockPos blockPos = AutoBookData.getInfo().getLecternBlock().getBlockPos();
-                MinecraftClient.getInstance().player.getInventory().selectedSlot = 0;
+                MinecraftClient instance = MinecraftClient.getInstance();                
+				instance.player.getInventory().selectedSlot = 0;
                 ClientPlayNetworking.getSender().sendPacket(new PlayerActionC2SPacket(Action.START_DESTROY_BLOCK, blockPos, side));
                 ClientPlayNetworking.getSender().sendPacket(new PlayerActionC2SPacket(Action.STOP_DESTROY_BLOCK, blockPos, side));
             }
@@ -78,7 +80,7 @@ abstract class ReceiveTradeOfferPacket {
     @Inject(at = @At("HEAD"), method = "onItemPickupAnimation", cancellable = true)
     public void onItemPickupAnimation(ItemPickupAnimationS2CPacket packet, CallbackInfo ci) {
         if (AutoBookData.getInfo().getWorking() && (AutoBookData.getInfo().getLecternBlock().getBlockPos().compareTo(MinecraftClient.getInstance().world.getEntityById(packet.getEntityId()).getBlockPos()) <= 1)) {//1 = range
-            ClientPlayNetworking.getSender().sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, AutoBookData.getInfo().getLecternBlock()));
+            ClientPlayNetworking.getSender().sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, AutoBookData.getInfo().getLecternBlock(), 0));
             AutoBookData.getInfo().setDone(false);
         }
     }

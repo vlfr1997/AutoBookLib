@@ -4,7 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.LecternBlock;
@@ -16,7 +16,7 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.server.command.CommandManager;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -46,20 +46,23 @@ public class AutoBookLib implements ModInitializer {
 			GLFW.GLFW_KEY_J, // The keycode of the key
 			"Auto Book Librarian UI" // The translation key of the keybinding's category.
 		));
-		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+	
+		CommandRegistrationCallback.EVENT.register((dispatcher, access, enviroment) -> {
 			dispatcher.register(CommandManager.literal("abl")
 			.then(CommandManager.argument("enchantment", EnchantmentArgumentType.enchantment())
 			.then(CommandManager.argument("level", IntegerArgumentType.integer(0))
 			.executes(context -> {
 				AutoBookData.getInfo().setTargetId(EnchantmentHelper.getEnchantmentId(EnchantmentArgumentType.getEnchantment(context, "enchantment")));
 				AutoBookData.getInfo().setTargetLevel(IntegerArgumentType.getInteger(context, "level"));
-				MinecraftClient.getInstance().player.sendMessage(new LiteralText("Enchant Targeted: " + AutoBookData.getInfo().getTargetId().toString() + AutoBookData.getInfo().getTargetLevel()), false);	
+				MinecraftClient instance = MinecraftClient.getInstance();
+				instance.player.sendMessage(Text.literal("Enchant Targeted: " + AutoBookData.getInfo().getTargetId().toString() + AutoBookData.getInfo().getTargetLevel()), false);	
 				return 1;
 			}))));
 		});
 		PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, entity) -> {
 			if (AutoBookData.getInfo().getWorking()) {
-				MinecraftClient.getInstance().player.getInventory().selectedSlot = 1;
+				MinecraftClient instance = MinecraftClient.getInstance();
+				instance.player.getInventory().selectedSlot = 1;
 			}
 		});
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -77,23 +80,29 @@ public class AutoBookLib implements ModInitializer {
 					if (target instanceof EntityHitResult) {
 						if (((EntityHitResult) target).getEntity() instanceof VillagerEntity) {
 							AutoBookData.getInfo().setVillager((VillagerEntity)((EntityHitResult) target).getEntity());
-							client.player.sendMessage(new LiteralText("Villager Targeted"), false);	
+							client.player.sendMessage(Text.literal("Villager Targeted"), false);	
 						}
 					} else if (target instanceof BlockHitResult) {
 						Block block = client.world.getBlockState(((BlockHitResult) target).getBlockPos()).getBlock();
 						if (block instanceof LecternBlock) {
 							AutoBookData.getInfo().setLecternBlock((BlockHitResult) target);
-							client.player.sendMessage(new LiteralText("Lectern Targeted"), false);	
+							client.player.sendMessage(Text.literal("Lectern Targeted"), false);	
 						} else {
 							if(AutoBookData.getInfo().getVillager() != null && AutoBookData.getInfo().getLecternBlock() != null){
-								if (((VillagerEntity) client.world.getEntityById(AutoBookData.getInfo().getVillager().getId())).getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) {
-									AutoBookData.getInfo().setWorking(true);
-								} else{
-									client.player.sendMessage(new LiteralText("Waiting for librarian"), false);
+								try {
+									if (((VillagerEntity) client.world.getEntityById(AutoBookData.getInfo().getVillager().getId())).getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) {
+										AutoBookData.getInfo().setWorking(true);
+									} else{
+										client.player.sendMessage(Text.literal("Please target both librarian and lectern"), false);
+										AutoBookData.getInfo().setWorking(false);
+									}
+								} catch (Exception e) {
+									client.player.sendMessage(Text.literal("Please target both librarian and lectern"), false);
 									AutoBookData.getInfo().setWorking(false);
 								}
+								
 							} else {
-								client.player.sendMessage(new LiteralText("Please target both villager and lectern"), false);
+								client.player.sendMessage(Text.literal("Please target both librarian and lectern"), false);
 								AutoBookData.getInfo().setWorking(false);
 							}
 						}
@@ -101,7 +110,7 @@ public class AutoBookLib implements ModInitializer {
 						AutoBookData.getInfo().setWorking(true);
 					}
 				} else {
-					client.player.sendMessage(new LiteralText("Stopped"), false);
+					client.player.sendMessage(Text.literal("Stopped"), false);
 					AutoBookData.getInfo().setWorking(false);
 					AutoBookData.getInfo().setDone(false);
 				}
