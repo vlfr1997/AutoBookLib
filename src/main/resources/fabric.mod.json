@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "autobooklib",
-  "version": "1.0.1+1.19.x",
+  "version": "1.0.2+1.19.x",
 
   "name": "Auto Book Lib",
   "description": "A mod to automagicaly break lecterns until you get the right enchant!",
