@@ -1,21 +1,21 @@
 package net.vlfr1997.autobooklib;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.LecternBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.command.argument.EnchantmentArgumentType;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -47,23 +47,17 @@ public class AutoBookLib implements ModInitializer {
 			"Auto Book Librarian UI" // The translation key of the keybinding's category.
 		));
 	
-		CommandRegistrationCallback.EVENT.register((dispatcher, access, enviroment) -> {
-			dispatcher.register(CommandManager.literal("abl")
-			.then(CommandManager.argument("enchantment", EnchantmentArgumentType.enchantment())
-			.then(CommandManager.argument("level", IntegerArgumentType.integer(0))
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, access) -> {
+			dispatcher.register(ClientCommandManager.literal("abl")
+			.then(ClientCommandManager.argument("enchantment", EnchantmentArgumentType.enchantment())
+			.then(ClientCommandManager.argument("level", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				AutoBookData.getInfo().setTargetId(EnchantmentHelper.getEnchantmentId(EnchantmentArgumentType.getEnchantment(context, "enchantment")));
+				AutoBookData.getInfo().setTargetId(EnchantmentHelper.getEnchantmentId((Enchantment)context.getArgument("enchantment", Enchantment.class)));
 				AutoBookData.getInfo().setTargetLevel(IntegerArgumentType.getInteger(context, "level"));
 				MinecraftClient instance = MinecraftClient.getInstance();
 				instance.player.sendMessage(Text.literal("Enchant Targeted: " + AutoBookData.getInfo().getTargetId().toString() + AutoBookData.getInfo().getTargetLevel()), false);	
 				return 1;
 			}))));
-		});
-		PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, entity) -> {
-			if (AutoBookData.getInfo().getWorking()) {
-				MinecraftClient instance = MinecraftClient.getInstance();
-				instance.player.getInventory().selectedSlot = 1;
-			}
 		});
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (AutoBookData.getInfo().getWorking() && !AutoBookData.getInfo().getDone() && (((VillagerEntity) client.world.getEntityById(AutoBookData.getInfo().getVillager().getId())).getVillagerData().getProfession() == VillagerProfession.LIBRARIAN)) {
