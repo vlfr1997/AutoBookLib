@@ -2,10 +2,9 @@ package net.vlfr1997.autobooklib;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.LecternBlock;
 import net.minecraft.client.MinecraftClient;
@@ -15,14 +14,13 @@ import net.minecraft.command.argument.EnchantmentArgumentType;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.village.VillagerProfession;
 import net.vlfr1997.autobooklib.data.AutoBookData;
-
+import net.minecraft.enchantment.Enchantment;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
@@ -46,22 +44,20 @@ public class AutoBookLib implements ModInitializer {
 			GLFW.GLFW_KEY_J, // The keycode of the key
 			"Auto Book Librarian UI" // The translation key of the keybinding's category.
 		));
-		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-			dispatcher.register(CommandManager.literal("abl")
-			.then(CommandManager.argument("enchantment", EnchantmentArgumentType.enchantment())
-			.then(CommandManager.argument("level", IntegerArgumentType.integer(0))
+		
+		ClientCommandManager.DISPATCHER.register(
+			ClientCommandManager.literal("abl")
+			.then(ClientCommandManager.argument("enchantment", EnchantmentArgumentType.enchantment())
+			.then(ClientCommandManager.argument("level", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				AutoBookData.getInfo().setTargetId(EnchantmentHelper.getEnchantmentId(EnchantmentArgumentType.getEnchantment(context, "enchantment")));
+				AutoBookData.getInfo().setTargetId(EnchantmentHelper.getEnchantmentId((Enchantment)context.getArgument("enchantment", Enchantment.class)));
 				AutoBookData.getInfo().setTargetLevel(IntegerArgumentType.getInteger(context, "level"));
-				MinecraftClient.getInstance().player.sendMessage(new LiteralText("Enchant Targeted: " + AutoBookData.getInfo().getTargetId().toString() + AutoBookData.getInfo().getTargetLevel()), false);	
+				MinecraftClient instance = MinecraftClient.getInstance();
+				instance.player.sendMessage(new LiteralText("Enchant Targeted: " + AutoBookData.getInfo().getTargetId().toString() + AutoBookData.getInfo().getTargetLevel()), false);	
 				return 1;
-			}))));
-		});
-		PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, entity) -> {
-			if (AutoBookData.getInfo().getWorking()) {
-				MinecraftClient.getInstance().player.getInventory().selectedSlot = 1;
-			}
-		});
+			})))
+		);
+
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (AutoBookData.getInfo().getWorking() && !AutoBookData.getInfo().getDone() && (((VillagerEntity) client.world.getEntityById(AutoBookData.getInfo().getVillager().getId())).getVillagerData().getProfession() == VillagerProfession.LIBRARIAN)) {
 				ClientPlayNetworking.getSender()
@@ -86,14 +82,20 @@ public class AutoBookLib implements ModInitializer {
 							client.player.sendMessage(new LiteralText("Lectern Targeted"), false);	
 						} else {
 							if(AutoBookData.getInfo().getVillager() != null && AutoBookData.getInfo().getLecternBlock() != null){
-								if (((VillagerEntity) client.world.getEntityById(AutoBookData.getInfo().getVillager().getId())).getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) {
-									AutoBookData.getInfo().setWorking(true);
-								} else{
-									client.player.sendMessage(new LiteralText("Waiting for librarian"), false);
+								try {
+									if (((VillagerEntity) client.world.getEntityById(AutoBookData.getInfo().getVillager().getId())).getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) {
+										AutoBookData.getInfo().setWorking(true);
+									} else{
+										client.player.sendMessage(new LiteralText("Please target both librarian and lectern"), false);
+										AutoBookData.getInfo().setWorking(false);
+									}
+								} catch (Exception e) {
+									client.player.sendMessage(new LiteralText("Please target both librarian and lectern"), false);
 									AutoBookData.getInfo().setWorking(false);
 								}
+								
 							} else {
-								client.player.sendMessage(new LiteralText("Please target both villager and lectern"), false);
+								client.player.sendMessage(new LiteralText("Please target both librarian and lectern"), false);
 								AutoBookData.getInfo().setWorking(false);
 							}
 						}
@@ -107,7 +109,5 @@ public class AutoBookLib implements ModInitializer {
 				}
 			}
 		});
-
-		LOGGER.info("Hello Fabric world!");
 	}
 }

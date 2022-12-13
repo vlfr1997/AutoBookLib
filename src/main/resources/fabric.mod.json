@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "autobooklib",
-  "version": "1.0.0+1.18.x",
+  "version": "1.0.2+1.18.2",
 
   "name": "Auto Book Lib",
   "description": "A mod to automagicaly break lecterns until you get the right enchant!",
@@ -27,9 +27,9 @@
   ],
 
   "depends": {
-    "fabricloader": ">=0.13.3",
+    "fabricloader": ">=0.14.11",
     "fabric": "*",
-    "minecraft": "1.18.x",
+    "minecraft": "1.18.2",
     "java": ">=17"
   },
   "suggests": {
