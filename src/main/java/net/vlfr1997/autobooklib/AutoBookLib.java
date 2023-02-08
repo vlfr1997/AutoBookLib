@@ -11,19 +11,21 @@ import net.minecraft.block.LecternBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.command.argument.EnchantmentArgumentType;
+import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.village.VillagerProfession;
 import net.vlfr1997.autobooklib.data.AutoBookData;
-
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,16 +51,19 @@ public class AutoBookLib implements ModInitializer {
 	
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, access) -> {
 			dispatcher.register(ClientCommandManager.literal("abl")
-			.then(ClientCommandManager.argument("enchantment", EnchantmentArgumentType.enchantment())
+
+			.then(ClientCommandManager.argument("enchantment", RegistryEntryArgumentType.registryEntry(access, RegistryKeys.ENCHANTMENT))
 			.then(ClientCommandManager.argument("level", IntegerArgumentType.integer(0))
 			.executes(context -> {
-				AutoBookData.getInfo().setTargetId(EnchantmentHelper.getEnchantmentId((Enchantment)context.getArgument("enchantment", Enchantment.class)));
+				AutoBookData.getInfo().setTargetId(EnchantmentHelper.getEnchantmentId((Enchantment)context.getArgument("enchantment", RegistryEntry.Reference.class).value()));
 				AutoBookData.getInfo().setTargetLevel(IntegerArgumentType.getInteger(context, "level"));
 				MinecraftClient instance = MinecraftClient.getInstance();
 				instance.player.sendMessage(Text.literal("Enchant Targeted: " + AutoBookData.getInfo().getTargetId().toString() + AutoBookData.getInfo().getTargetLevel()), false);	
 				return 1;
 			}))));
 		});
+
+
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (AutoBookData.getInfo().getWorking() && !AutoBookData.getInfo().getDone() && (((VillagerEntity) client.world.getEntityById(AutoBookData.getInfo().getVillager().getId())).getVillagerData().getProfession() == VillagerProfession.LIBRARIAN)) {
 				ClientPlayNetworking.getSender()
@@ -110,7 +115,5 @@ public class AutoBookLib implements ModInitializer {
 				}
 			}
 		});
-
-		LOGGER.info("Hello Fabric world!");
 	}
 }
