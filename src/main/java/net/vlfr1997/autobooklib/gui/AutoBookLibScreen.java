@@ -13,6 +13,7 @@ import io.github.cottonmc.cotton.gui.widget.WListPanel;
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment;
 import io.github.cottonmc.cotton.gui.widget.data.Insets;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.vlfr1997.autobooklib.data.AutoBookData;
@@ -66,8 +67,8 @@ public class AutoBookLibScreen extends LightweightGuiDescription {
         
         ArrayList<String> data = new ArrayList<>();
 
-        for (Field declaredField : Enchantments.class.getFields()) {
-            String name = declaredField.getName().toLowerCase();
+        for (Identifier id : Registries.ENCHANTMENT.getIds()) {
+            String name = id.toShortTranslationKey();
             switch (name) {
                 //Not possible to get on vanilla.
                 case "swift_sneak":                    
