@@ -1,8 +1,6 @@
 package net.vlfr1997.autobooklib;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -11,20 +9,17 @@ import net.minecraft.block.LecternBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.command.argument.RegistryEntryArgumentType;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.village.VillagerProfession;
 import net.vlfr1997.autobooklib.data.AutoBookData;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
+import net.vlfr1997.autobooklib.gui.AutoBookLibScreen;
+
+import io.github.cottonmc.cotton.gui.client.CottonClientScreen;
 
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
@@ -36,6 +31,7 @@ public class AutoBookLib implements ModInitializer {
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger("modid");
 	private static KeyBinding keyBinding;
+	private static KeyBinding keyBinding2;
 
 	@Override
 	public void onInitialize() {
@@ -46,23 +42,15 @@ public class AutoBookLib implements ModInitializer {
 			"Auto Book Librarian", // The translation key of the keybinding's name
 			InputUtil.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
 			GLFW.GLFW_KEY_J, // The keycode of the key
+			"Target Lectern/Villager" // The translation key of the keybinding's category.
+		));
+
+		keyBinding2 = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+			"Open Gui", // The translation key of the keybinding's name
+			InputUtil.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
+			GLFW.GLFW_KEY_K, // The keycode of the key
 			"Auto Book Librarian UI" // The translation key of the keybinding's category.
 		));
-	
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, access) -> {
-			dispatcher.register(ClientCommandManager.literal("abl")
-
-			.then(ClientCommandManager.argument("enchantment", RegistryEntryArgumentType.registryEntry(access, RegistryKeys.ENCHANTMENT))
-			.then(ClientCommandManager.argument("level", IntegerArgumentType.integer(0))
-			.executes(context -> {
-				AutoBookData.getInfo().setTargetId(EnchantmentHelper.getEnchantmentId((Enchantment)context.getArgument("enchantment", RegistryEntry.Reference.class).value()));
-				AutoBookData.getInfo().setTargetLevel(IntegerArgumentType.getInteger(context, "level"));
-				MinecraftClient instance = MinecraftClient.getInstance();
-				instance.player.sendMessage(Text.literal("Enchant Targeted: " + AutoBookData.getInfo().getTargetId().toString() + AutoBookData.getInfo().getTargetLevel()), false);	
-				return 1;
-			}))));
-		});
-
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (AutoBookData.getInfo().getWorking() && !AutoBookData.getInfo().getDone() && (((VillagerEntity) client.world.getEntityById(AutoBookData.getInfo().getVillager().getId())).getVillagerData().getProfession() == VillagerProfession.LIBRARIAN)) {
@@ -71,6 +59,10 @@ public class AutoBookLib implements ModInitializer {
 					client.player.isSneaking(),
 					Hand.MAIN_HAND));
 				AutoBookData.getInfo().setDone(true);
+			}
+
+			while (keyBinding2.wasPressed()) {
+				MinecraftClient.getInstance().setScreen(new CottonClientScreen(new AutoBookLibScreen()));
 			}
 
 			while (keyBinding.wasPressed()) {
@@ -90,7 +82,12 @@ public class AutoBookLib implements ModInitializer {
 							if(AutoBookData.getInfo().getVillager() != null && AutoBookData.getInfo().getLecternBlock() != null){
 								try {
 									if (((VillagerEntity) client.world.getEntityById(AutoBookData.getInfo().getVillager().getId())).getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) {
-										AutoBookData.getInfo().setWorking(true);
+										if (AutoBookData.getInfo().getEnchantedData().isEmpty()) {
+											client.player.sendMessage(Text.literal("Please select at least one enchant"), false);
+											AutoBookData.getInfo().setWorking(false);
+										} else {
+											AutoBookData.getInfo().setWorking(true);
+										}
 									} else{
 										client.player.sendMessage(Text.literal("Please target both librarian and lectern"), false);
 										AutoBookData.getInfo().setWorking(false);

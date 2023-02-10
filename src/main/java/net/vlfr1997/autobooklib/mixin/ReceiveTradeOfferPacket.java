@@ -40,25 +40,27 @@ abstract class ReceiveTradeOfferPacket {
             AutoBookData.getInfo().setOffers(packet.getOffers());
             int ebookcount = 0;
             int level = 0;
+            int price = 1;
             Identifier id = new Identifier("minecraft:iron_ingot");
             for (TradeOffer offer : packet.getOffers()) {
                 if (offer.getSellItem().getItem() instanceof EnchantedBookItem) {
+                    price = offer.getOriginalFirstBuyItem().getCount();
                     ebookcount++;
                     ItemStack itemStack = offer.getSellItem();
                     NbtList nbtList = EnchantedBookItem.getEnchantmentNbt(itemStack);
                     for (int i = 0; i < nbtList.size(); ++i) {
                         NbtCompound nbtCompound = nbtList.getCompound(i);
                         level = EnchantmentHelper.getLevelFromNbt(nbtCompound);
-                        id = EnchantmentHelper.getIdFromNbt(nbtCompound);
+                        id = EnchantmentHelper.getIdFromNbt(nbtCompound);               
                     }
                 }
             }
-            if (ebookcount > 0 && (id.equals(AutoBookData.getInfo().getTargetId()) && level == AutoBookData.getInfo().getTargetLevel())) {
-                AutoBookData.getInfo().setWorking(false);
+            if (AutoBookData.getInfo().getEnchantedData().containsKey(id) && ebookcount > 0 && level == AutoBookData.getInfo().getEnchantedData().get(id).getLevel() && AutoBookData.getInfo().getEnchantedData().get(id).getPrice() >= price) {
+                AutoBookData.getInfo().setWorking(false); 
                 AutoBookData.getInfo().setDone(false);
                 MinecraftClient instance = MinecraftClient.getInstance();
-				instance.player.sendMessage(Text.literal("Found: " + id.toString() + Integer.toString(level)), false);
-                instance.player.sendMessage(Text.literal("Done"), false);
+                instance.player.sendMessage(Text.literal("Found: " + id.toString() + Integer.toString(level) + " for " + price + " emeralds"), false);
+                instance.player.sendMessage(Text.literal("Done"), false); 
             } else {
                 Direction side = Direction.NORTH;
                 BlockPos blockPos = AutoBookData.getInfo().getLecternBlock().getBlockPos();            

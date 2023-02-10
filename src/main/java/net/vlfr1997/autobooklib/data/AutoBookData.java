@@ -1,6 +1,8 @@
 package net.vlfr1997.autobooklib.data;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.util.Identifier;
@@ -13,10 +15,9 @@ public class AutoBookData {
 	private List<TradeOffer> offers;
     private Boolean HudIsOpen = false;
     private BlockHitResult lecternBlock;
-    private int targetLevel = 1;
-    private Identifier targetId = new Identifier("minecraft:mending");
     private Boolean working = false;
     private Boolean done = false;
+    Map<Identifier, EnchantedData> eData = new HashMap<Identifier, EnchantedData>();
 
     public static AutoBookData getInfo() {
 		if (info == null)
@@ -38,22 +39,6 @@ public class AutoBookData {
 
     public void setWorking(Boolean working) {
         this.working = working;
-    }
-
-    public Identifier getTargetId() {
-        return targetId;
-    }
-
-    public void setTargetId(Identifier targetId) {
-        this.targetId = targetId;
-    }
-
-    public int getTargetLevel() {
-        return targetLevel;
-    }
-
-    public void setTargetLevel(int targetLevel) {
-        this.targetLevel = targetLevel;
     }
 
     public BlockHitResult getLecternBlock() {
@@ -91,4 +76,12 @@ public class AutoBookData {
     public Boolean getHud(){		
 		return HudIsOpen;
 	};
+
+    public Map<Identifier, EnchantedData> getEnchantedData() {
+        return eData;
+    }
+
+    public void setEnchantedData(Map<Identifier, EnchantedData> eData) {
+        this.eData = eData;
+    }
 }
