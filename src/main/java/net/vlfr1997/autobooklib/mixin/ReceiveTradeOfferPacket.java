@@ -18,6 +18,7 @@ import net.minecraft.network.packet.s2c.play.ItemPickupAnimationS2CPacket;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 import net.minecraft.network.packet.s2c.play.SetTradeOffersS2CPacket;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -25,19 +26,19 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.village.TradeOffer;
 import net.vlfr1997.autobooklib.data.AutoBookData;
-
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-
 @Mixin(ClientPlayNetworkHandler.class)
 abstract class ReceiveTradeOfferPacket {
+
     @Inject(at = @At("HEAD"), method = "onSetTradeOffers", cancellable = true)
     public void onSetTradeOffers(SetTradeOffersS2CPacket packet, CallbackInfo ci) {
-        if (AutoBookData.getInfo().getWorking()) {
-            AutoBookData.getInfo().setOffers(packet.getOffers());
+
+        if (AutoBookData.getInstance().getWorking()) {
+            AutoBookData.getInstance().setOffers(packet.getOffers());
             int ebookcount = 0;
             int level = 0;
             int price = 1;
@@ -51,43 +52,60 @@ abstract class ReceiveTradeOfferPacket {
                     for (int i = 0; i < nbtList.size(); ++i) {
                         NbtCompound nbtCompound = nbtList.getCompound(i);
                         level = EnchantmentHelper.getLevelFromNbt(nbtCompound);
-                        id = EnchantmentHelper.getIdFromNbt(nbtCompound);               
+                        id = EnchantmentHelper.getIdFromNbt(nbtCompound);
                     }
                 }
             }
-            if (AutoBookData.getInfo().getEnchantedData().containsKey(id) && ebookcount > 0 && level == AutoBookData.getInfo().getEnchantedData().get(id).getLevel() && AutoBookData.getInfo().getEnchantedData().get(id).getPrice() >= price) {
-                AutoBookData.getInfo().setWorking(false); 
-                AutoBookData.getInfo().setDone(false);
+            if (AutoBookData.getInstance().getEnchantedData().containsKey(id) && ebookcount > 0
+                    && level == AutoBookData.getInstance().getEnchantedData().get(id).getLevel()
+                    && AutoBookData.getInstance().getEnchantedData().get(id).getPrice() >= price) {
+                AutoBookData.getInstance().setWorking(false);
+                AutoBookData.getInstance().setDone(false);
                 MinecraftClient instance = MinecraftClient.getInstance();
-                instance.player.sendMessage(Text.literal("Found: " + id.toString() + Integer.toString(level) + " for " + price + " emeralds"), false);
-                instance.player.sendMessage(Text.literal("Done"), false); 
+
+                Text enchant = Text.translatable(id.toTranslationKey("enchantment")).append(ScreenTexts.SPACE)
+                        .append(Text.translatable("enchantment.level." + level));
+
+                instance.player.sendMessage(
+                        Text.translatable("info.autobooklib.found",
+                                enchant, price),
+                        false);
+                instance.player.sendMessage(Text.literal("Done"), false);
             } else {
                 Direction side = Direction.NORTH;
-                BlockPos blockPos = AutoBookData.getInfo().getLecternBlock().getBlockPos();            
+                BlockPos blockPos = AutoBookData.getInstance().getLecternBlock().getBlockPos();
                 ClientPlayNetworking.getSender().sendPacket(new UpdateSelectedSlotC2SPacket(0));
-                ClientPlayNetworking.getSender().sendPacket(new PlayerActionC2SPacket(Action.START_DESTROY_BLOCK, blockPos, side));
-                ClientPlayNetworking.getSender().sendPacket(new PlayerActionC2SPacket(Action.STOP_DESTROY_BLOCK, blockPos, side));
+                ClientPlayNetworking.getSender()
+                        .sendPacket(new PlayerActionC2SPacket(Action.START_DESTROY_BLOCK, blockPos, side));
+                ClientPlayNetworking.getSender()
+                        .sendPacket(new PlayerActionC2SPacket(Action.STOP_DESTROY_BLOCK, blockPos, side));
             }
         }
     }
-    
+
     @Inject(at = @At("HEAD"), method = "onOpenScreen", cancellable = true)
     public void onOpenScreen(OpenScreenS2CPacket packet, CallbackInfo ci) {
         var type = packet.getScreenHandlerType();
-        if (AutoBookData.getInfo().getWorking() && type == ScreenHandlerType.MERCHANT) {
+        if (AutoBookData.getInstance().getWorking() && type == ScreenHandlerType.MERCHANT) {
             ClientPlayNetworking.getSender()
                     .sendPacket(new CloseHandledScreenC2SPacket(packet.getSyncId()));
             ci.cancel();
         }
     }
+
     @Inject(at = @At("HEAD"), method = "onItemPickupAnimation", cancellable = true)
     public void onItemPickupAnimation(ItemPickupAnimationS2CPacket packet, CallbackInfo ci) {
         MinecraftClient client = MinecraftClient.getInstance();
         Entity pickedItem = client.world.getEntityById(packet.getEntityId());
-        if (AutoBookData.getInfo().getWorking() && pickedItem!=null && (AutoBookData.getInfo().getLecternBlock().getBlockPos().compareTo(pickedItem.getBlockPos()) <= 1)) {//1 = range
+        if (AutoBookData.getInstance().getWorking() && pickedItem != null
+                && (AutoBookData.getInstance().getLecternBlock().getBlockPos()
+                        .compareTo(pickedItem.getBlockPos()) <= 1)) {// 1
+            // =
+            // range
             ClientPlayNetworking.getSender().sendPacket(new UpdateSelectedSlotC2SPacket(1));
-            ClientPlayNetworking.getSender().sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, AutoBookData.getInfo().getLecternBlock(), 0));
-            AutoBookData.getInfo().setDone(false);
+            ClientPlayNetworking.getSender().sendPacket(
+                    new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, AutoBookData.getInstance().getLecternBlock(), 0));
+            AutoBookData.getInstance().setDone(false);
         }
     }
 }

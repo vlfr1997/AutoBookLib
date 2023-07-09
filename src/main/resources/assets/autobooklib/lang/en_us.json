@@ -1,0 +1,12 @@
+{
+    "key.autobooklib.j": "Target Lectern/Villager",
+    "key.category.autobooklib": "Auto Book Librarian",
+    "key.autobooklib.k": "Open Gui",
+    "info.autobooklib.found": "Found: %s for %d Emeralds!",
+    "info.autobooklib.done": "Done!",
+    "info.autobooklib.villagerTargeted": "Villager Targeted",
+    "info.autobooklib.lecternTargeted": "Lectern Targeted",
+    "error.autobooklib.noEnchant": "Please select at least one enchant",
+    "error.autobooklib.generic": "Please target both librarian and lectern",
+    "info.autobooklib.stopped": "Stopped"
+}

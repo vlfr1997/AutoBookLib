@@ -10,18 +10,19 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.village.TradeOffer;
 
 public class AutoBookData {
+
     private static AutoBookData info;
     private VillagerEntity villager;
-	private List<TradeOffer> offers;
+    private List<TradeOffer> offers;
     private Boolean HudIsOpen = false;
     private BlockHitResult lecternBlock;
     private Boolean working = false;
     private Boolean done = false;
     Map<Identifier, EnchantedData> eData = new HashMap<Identifier, EnchantedData>();
 
-    public static AutoBookData getInfo() {
-		if (info == null)
-			info = new AutoBookData();
+    public static AutoBookData getInstance() {
+        if (info == null)
+            info = new AutoBookData();
         return info;
     }
 
@@ -49,33 +50,33 @@ public class AutoBookData {
         this.lecternBlock = lecternBlock;
     }
 
-    public void setOffers(List<TradeOffer> list){
-		this.offers = list;
-	};
+    public void setOffers(List<TradeOffer> list) {
+        this.offers = list;
+    };
 
-    public List<TradeOffer> getOffers(){	
+    public List<TradeOffer> getOffers() {
         if (offers != null) {
             return offers;
         } else {
             return null;
         }
-	};
-    
-    public void setVillager(VillagerEntity villagerEntity){		
-		this.villager = villagerEntity;
-	};
+    };
 
-    public VillagerEntity getVillager(){		
-		return villager;
-	};
+    public void setVillager(VillagerEntity villagerEntity) {
+        this.villager = villagerEntity;
+    };
 
-    public void setHud(Boolean HudIsOpen){		
-		this.HudIsOpen = HudIsOpen;
-	};
+    public VillagerEntity getVillager() {
+        return villager;
+    };
 
-    public Boolean getHud(){		
-		return HudIsOpen;
-	};
+    public void setHud(Boolean HudIsOpen) {
+        this.HudIsOpen = HudIsOpen;
+    };
+
+    public Boolean getHud() {
+        return HudIsOpen;
+    };
 
     public Map<Identifier, EnchantedData> getEnchantedData() {
         return eData;
