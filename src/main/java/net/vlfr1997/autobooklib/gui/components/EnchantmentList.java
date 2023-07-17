@@ -10,7 +10,7 @@ import io.github.cottonmc.cotton.gui.widget.WToggleButton;
 import io.github.cottonmc.cotton.gui.widget.data.Axis;
 import net.minecraft.text.Text;
 
-public class EnchantList extends WPlainPanel {
+public class EnchantmentList extends WPlainPanel {
     private WToggleButton button;
     private WSlider sliderLevel;
     private WSlider sliderPrice;
@@ -41,11 +41,11 @@ public class EnchantList extends WPlainPanel {
         this.sliderPrice = sliderPrice;
     }
 
-    public EnchantList() {
-        setButton(new WToggleButton(Text.literal("MENDING")));
-        this.add(getButton(), 18, 0, 14 * 18, 18);
+    public EnchantmentList() {
+        setButton(new WToggleButton(Text.literal("ENCHANTMENT_NAME")));
+        this.add(getButton(), 18, 0);
 
-        this.add(new WLabel(Text.literal("Level: ")), 18, 18 + 1, height, height);
+        this.add(new WLabel(Text.literal("Level: ")), 18, 18 + 1);
         setSliderLevel(new WSlider(1, 5, Axis.HORIZONTAL));
         this.add(getSliderLevel(), 5 * 18 - 4, 18 - 4, 10 * 18, 18);
         supplierLevel = () -> {
@@ -54,7 +54,7 @@ public class EnchantList extends WPlainPanel {
         WDynamicLabel labelLevel = new WDynamicLabel(supplierLevel);
         this.add(labelLevel, 4 * 18, 18 + 1, 4, 4);
 
-        this.add(new WLabel(Text.literal("Max price: ")), 18, 2 * 18 - 5, height, height);
+        this.add(new WLabel(Text.literal("Max price: ")), 18, 2 * 18 - 5);
         setSliderPrice(new WSlider(1, 64, Axis.HORIZONTAL));
         this.add(getSliderPrice(), 5 * 18 - 4, 18 + 8, 10 * 18, 18);
         supplierPrice = () -> {
@@ -62,7 +62,5 @@ public class EnchantList extends WPlainPanel {
         };
         WDynamicLabel labelPrice = new WDynamicLabel(supplierPrice);
         this.add(labelPrice, 4 * 18, 2 * 18 - 5, 4, 4);
-
-        this.setSize(7 * 18, 2 * 18);
     }
 }

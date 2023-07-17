@@ -1,46 +1,16 @@
 package net.vlfr1997.autobooklib.data;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.village.TradeOffer;
 
 public class AutoBookData {
-
-    private static AutoBookData info;
     private VillagerEntity villager;
-    private List<TradeOffer> offers;
-    private Boolean HudIsOpen = false;
     private BlockHitResult lecternBlock;
-    private Boolean working = false;
-    private Boolean done = false;
-    Map<Identifier, EnchantedData> eData = new HashMap<Identifier, EnchantedData>();
-
-    public static AutoBookData getInstance() {
-        if (info == null)
-            info = new AutoBookData();
-        return info;
-    }
-
-    public Boolean getDone() {
-        return done;
-    }
-
-    public void setDone(Boolean done) {
-        this.done = done;
-    }
-
-    public Boolean getWorking() {
-        return working;
-    }
-
-    public void setWorking(Boolean working) {
-        this.working = working;
-    }
+    private Map<Identifier, EnchantedData> eData = new HashMap<Identifier, EnchantedData>();
 
     public BlockHitResult getLecternBlock() {
         return lecternBlock;
@@ -50,32 +20,12 @@ public class AutoBookData {
         this.lecternBlock = lecternBlock;
     }
 
-    public void setOffers(List<TradeOffer> list) {
-        this.offers = list;
-    };
-
-    public List<TradeOffer> getOffers() {
-        if (offers != null) {
-            return offers;
-        } else {
-            return null;
-        }
-    };
-
     public void setVillager(VillagerEntity villagerEntity) {
         this.villager = villagerEntity;
     };
 
     public VillagerEntity getVillager() {
         return villager;
-    };
-
-    public void setHud(Boolean HudIsOpen) {
-        this.HudIsOpen = HudIsOpen;
-    };
-
-    public Boolean getHud() {
-        return HudIsOpen;
     };
 
     public Map<Identifier, EnchantedData> getEnchantedData() {

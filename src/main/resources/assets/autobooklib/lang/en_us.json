@@ -8,5 +8,6 @@
     "info.autobooklib.lecternTargeted": "Lectern Targeted",
     "error.autobooklib.noEnchant": "Please select at least one enchant",
     "error.autobooklib.generic": "Please target both librarian and lectern",
-    "info.autobooklib.stopped": "Stopped"
+    "info.autobooklib.stopped": "Stopped",
+    "gui.autobooklib.title": "AutoBookLib GUI"
 }
