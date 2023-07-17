@@ -30,7 +30,7 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation include("io.github.cottonmc:LibGui:7.1.1+1.19.4")
+	modImplementation include("io.github.cottonmc:LibGui:8.0.1+1.20")
 }
 
 processResources {
