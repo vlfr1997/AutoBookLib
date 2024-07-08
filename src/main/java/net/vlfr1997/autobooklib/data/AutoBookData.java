@@ -3,14 +3,14 @@ package net.vlfr1997.autobooklib.data;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 
 public class AutoBookData {
     private VillagerEntity villager;
     private BlockHitResult lecternBlock;
-    private Map<Identifier, EnchantedData> eData = new HashMap<Identifier, EnchantedData>();
+    private Map<Enchantment, EnchantedData> eData = new HashMap<Enchantment, EnchantedData>();
 
     public BlockHitResult getLecternBlock() {
         return lecternBlock;
@@ -28,11 +28,11 @@ public class AutoBookData {
         return villager;
     };
 
-    public Map<Identifier, EnchantedData> getEnchantedData() {
+    public Map<Enchantment, EnchantedData> getEnchantedData() {
         return eData;
     }
 
-    public void setEnchantedData(Map<Identifier, EnchantedData> eData) {
+    public void setEnchantedData(Map<Enchantment, EnchantedData> eData) {
         this.eData = eData;
     }
 }

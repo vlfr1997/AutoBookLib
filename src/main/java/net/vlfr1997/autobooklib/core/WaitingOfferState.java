@@ -4,19 +4,19 @@ import java.util.Arrays;
 
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.SetTradeOffersS2CPacket;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.village.TradeOffer;
 import net.vlfr1997.autobooklib.data.AutoBookData;
@@ -35,26 +35,25 @@ public class WaitingOfferState extends AutoBookState {
             int ebookcount = 0;
             int level = 0;
             int price = 1;
-            Identifier id = new Identifier("minecraft:iron_ingot");
+            Enchantment enchantment = null;
             for (TradeOffer offer : tradeOffersS2CPacket.getOffers()) {
                 if (offer.getSellItem().getItem() instanceof EnchantedBookItem) {
                     price = offer.getOriginalFirstBuyItem().getCount();
                     ebookcount++;
                     ItemStack itemStack = offer.getSellItem();
-                    NbtList nbtList = EnchantedBookItem.getEnchantmentNbt(itemStack);
-                    for (int i = 0; i < nbtList.size(); ++i) {
-                        NbtCompound nbtCompound = nbtList.getCompound(i);
-                        level = EnchantmentHelper.getLevelFromNbt(nbtCompound);
-                        id = EnchantmentHelper.getIdFromNbt(nbtCompound);
-                    }
+                    Entry<RegistryEntry<Enchantment>> enchantmentEntry = EnchantmentHelper.getEnchantments(itemStack)
+                            .getEnchantmentEntries()
+                            .iterator().next();
+                    enchantment = enchantmentEntry.getKey().value();
+                    level = enchantmentEntry.getIntValue();
                 }
             }
-            if (data.getEnchantedData().containsKey(id) && ebookcount > 0
-                    && level == data.getEnchantedData().get(id).getLevel()
-                    && data.getEnchantedData().get(id).getPrice() >= price) {
+            if (data.getEnchantedData().containsKey(enchantment) && ebookcount > 0
+                    && level == data.getEnchantedData().get(enchantment).getLevel()
+                    && data.getEnchantedData().get(enchantment).getPrice() >= price) {
                 MinecraftClient client = MinecraftClient.getInstance();
 
-                Text enchant = Text.translatable(id.toTranslationKey("enchantment")).append(ScreenTexts.SPACE)
+                Text enchant = enchantment.description().copy().append(ScreenTexts.SPACE)
                         .append(Text.translatable("enchantment.level." + level));
 
                 client.player.sendMessage(

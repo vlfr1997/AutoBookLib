@@ -1,13 +1,14 @@
 package net.vlfr1997.autobooklib.core;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.util.Identifier;
 import net.vlfr1997.autobooklib.data.AutoBookData;
 import net.vlfr1997.autobooklib.data.EnchantedData;
 
@@ -38,8 +39,14 @@ public class AutoBookController {
         state = state.onPacket(packet, ci);
     }
 
-    public Map<Identifier, EnchantedData> getEnchantedData() {
+    public Map<Enchantment, EnchantedData> getEnchantedData() {
         return this.state.data.getEnchantedData();
+    }
+
+    public void onStop() {
+        this.state.data.setEnchantedData(new HashMap<Enchantment, EnchantedData>());
+        this.state.data.setLecternBlock(null);
+        this.state.data.setVillager(null);
     }
 
 }

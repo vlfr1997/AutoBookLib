@@ -11,11 +11,11 @@ import io.github.cottonmc.cotton.gui.widget.WLabel;
 import io.github.cottonmc.cotton.gui.widget.WListPanel;
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment;
 import io.github.cottonmc.cotton.gui.widget.data.Insets;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.vlfr1997.autobooklib.core.AutoBookController;
 import net.vlfr1997.autobooklib.data.EnchantedData;
 import net.vlfr1997.autobooklib.gui.components.EnchantmentList;
@@ -23,14 +23,15 @@ import net.vlfr1997.autobooklib.gui.components.EnchantmentList;
 public class AutoBookGuiDescription extends LightweightGuiDescription {
 
     public AutoBookGuiDescription() {
+        MinecraftClient client = MinecraftClient.getInstance();
 
         BiConsumer<Enchantment, EnchantmentList> configurator = (Enchantment enchantment,
                 EnchantmentList destination) -> {
-            Identifier id = EnchantmentHelper.getEnchantmentId(enchantment);
 
             var enchantmentData = AutoBookController.getInstance().getEnchantedData();
-            destination.getButton().setLabel(Text.translatable(enchantment.getTranslationKey()));
-            Boolean containsKey = enchantmentData.containsKey(id);
+
+            destination.getButton().setLabel(Text.literal(enchantment.description().getString()));
+            Boolean containsKey = enchantmentData.containsKey(enchantment);
             destination.getButton().setToggle(containsKey);
 
             destination.getSliderLevel().setMaxValue(enchantment.getMaxLevel());
@@ -39,32 +40,33 @@ public class AutoBookGuiDescription extends LightweightGuiDescription {
 
             Consumer<Boolean> onToggle = value -> {
                 if (!destination.getButton().getToggle()) {
-                    enchantmentData.remove(id);
+                    enchantmentData.remove(enchantment);
                 } else {
-                    enchantmentData.put(id, new EnchantedData(
-                            destination.getSliderLevel().getValue(), destination.getSliderPrice().getValue()));
+                    enchantmentData.put(enchantment, new EnchantedData(
+                            destination.getSliderLevel().getValue(),
+                            destination.getSliderPrice().getValue()));
                 }
             };
             destination.getButton().setOnToggle(onToggle);
 
             IntConsumer onSliderLevelChange = value -> {
-                if (enchantmentData.containsKey(id)) {
-                    enchantmentData.get(id).setLevel(value);
+                if (enchantmentData.containsKey(enchantment)) {
+                    enchantmentData.get(enchantment).setLevel(value);
                 }
             };
             destination.getSliderLevel().setValueChangeListener(onSliderLevelChange);
 
             IntConsumer onSliderPriceChange = value -> {
-                if (enchantmentData.containsKey(id)) {
-                    enchantmentData.get(id).setPrice(value);
+                if (enchantmentData.containsKey(enchantment)) {
+                    enchantmentData.get(enchantment).setPrice(value);
                 }
             };
             destination.getSliderPrice().setValueChangeListener(onSliderPriceChange);
 
             if (containsKey) {
-                int level = enchantmentData.get(id).getLevel();
+                int level = enchantmentData.get(enchantment).getLevel();
                 destination.getSliderLevel().setValue(level);
-                int price = enchantmentData.get(id).getPrice();
+                int price = enchantmentData.get(enchantment).getPrice();
                 destination.getSliderPrice().setValue(price);
             }
 
@@ -72,11 +74,11 @@ public class AutoBookGuiDescription extends LightweightGuiDescription {
 
         ArrayList<Enchantment> data = new ArrayList<>();
 
-        for (Enchantment enchantment : Registries.ENCHANTMENT) {
-            if (enchantment.isAvailableForEnchantedBookOffer()) {
-                data.add(enchantment);
-            }
-        }
+        // Get only tradeable enchantments
+        client.world.getRegistryManager()
+                .get(RegistryKeys.ENCHANTMENT).getEntryList(EnchantmentTags.TRADEABLE).get().forEach(enchantment -> {
+                    data.add(enchantment.value());
+                });
 
         WGridPanel root = new WGridPanel();
         setRootPanel(root);
