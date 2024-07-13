@@ -78,8 +78,8 @@ public class WaitingOfferState extends AutoBookState {
                         position = target;
                     }
                     AutoBookUtils.setSelectedSlot(position);
-                    AutoBookUtils.mineBlock(blockPos);
                 }
+                AutoBookUtils.mineBlock(blockPos);
                 return new WaitingLecternState(data);
             }
         }
