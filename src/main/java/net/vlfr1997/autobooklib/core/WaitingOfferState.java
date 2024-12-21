@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.listener.ClientPlayPacketListener;
@@ -37,7 +36,7 @@ public class WaitingOfferState extends AutoBookState {
             int price = 1;
             Enchantment enchantment = null;
             for (TradeOffer offer : tradeOffersS2CPacket.getOffers()) {
-                if (offer.getSellItem().getItem() instanceof EnchantedBookItem) {
+                if (EnchantmentHelper.hasEnchantments(offer.getSellItem())) {
                     price = offer.getOriginalFirstBuyItem().getCount();
                     ebookcount++;
                     ItemStack itemStack = offer.getSellItem();
@@ -75,9 +74,9 @@ public class WaitingOfferState extends AutoBookState {
                 if (position > -1) {
                     if (!AutoBookUtils.isInHotbar(position)) {
                         AutoBookUtils.placeInHotbar(position, target);
-                        position = target;
+                    } else {
+                        AutoBookUtils.setSelectedSlot(position);
                     }
-                    AutoBookUtils.setSelectedSlot(position);
                 }
                 AutoBookUtils.mineBlock(blockPos);
                 return new WaitingLecternState(data);

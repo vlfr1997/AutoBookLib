@@ -76,8 +76,10 @@ public class AutoBookGuiDescription extends LightweightGuiDescription {
 
         // Get only tradeable enchantments
         client.world.getRegistryManager()
-                .get(RegistryKeys.ENCHANTMENT).getEntryList(EnchantmentTags.TRADEABLE).get().forEach(enchantment -> {
-                    data.add(enchantment.value());
+                .getOptional(RegistryKeys.ENCHANTMENT).get().getIndexedEntries().forEach((enchantment) -> {
+                    if (enchantment.isIn(EnchantmentTags.TRADEABLE)) {
+                        data.add(enchantment.value());
+                    }
                 });
 
         WGridPanel root = new WGridPanel();

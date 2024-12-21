@@ -21,9 +21,9 @@ public class WaitingInventoryUpdateState extends AutoBookState {
         if (position > -1) {
             if (!AutoBookUtils.isInHotbar(position)) {
                 AutoBookUtils.placeInHotbar(position, target);
-                position = target;
+            } else {
+                AutoBookUtils.setSelectedSlot(position);
             }
-            AutoBookUtils.setSelectedSlot(position);
             AutoBookUtils.placeBlock(data.getLecternBlock());
             return new WaitingLibrarianState(data);
         }

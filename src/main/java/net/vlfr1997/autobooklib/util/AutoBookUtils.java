@@ -2,13 +2,16 @@ package net.vlfr1997.autobooklib.util;
 
 import java.util.List;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.PickFromInventoryC2SPacket;
+import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket.Action;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.Hand;
@@ -48,7 +51,7 @@ public class AutoBookUtils {
             final String translationKey = item.getTranslationKey();
             int position = 0;
             for (ItemStack itemStack : inventory) {
-                if (itemStack.getTranslationKey() == translationKey) {
+                if (itemStack.getItem().getTranslationKey() == translationKey) {
                     return position;
                 }
                 position++;
@@ -63,7 +66,14 @@ public class AutoBookUtils {
     }
 
     static public void placeInHotbar(int from, int target) {
-        setSelectedSlot(target);
-        ClientPlayNetworking.getSender().sendPacket(new PickFromInventoryC2SPacket(from));
+        Int2ObjectMap<ItemStack> emptyMap = new Int2ObjectArrayMap<>();
+        MinecraftClient client = MinecraftClient.getInstance();
+        ClientPlayNetworking.getSender()
+                .sendPacket(new ClickSlotC2SPacket(client.player.currentScreenHandler.syncId,
+                        client.player.currentScreenHandler.getRevision(), from, target, SlotActionType.SWAP,
+                        client.player.getInventory().getStack(from).copy(),
+                        emptyMap));
+        AutoBookUtils.setSelectedSlot(target);
     }
+
 }

@@ -27,4 +27,5 @@ abstract class ReceiveTradeOfferPacket {
     public void onItemPickupAnimation(ItemPickupAnimationS2CPacket packet, CallbackInfo ci) {
         AutoBookController.getInstance().onPacket(packet, ci);
     }
+
 }
