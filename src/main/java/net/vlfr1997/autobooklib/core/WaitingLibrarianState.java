@@ -19,7 +19,7 @@ public class WaitingLibrarianState extends AutoBookState {
     public AutoBookState onTick(MinecraftClient client) {
         VillagerEntity villager = (VillagerEntity) client.world.getEntityById(data.getVillager().getId());
         if (villager != null) {
-            if (villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) {
+            if (villager.getVillagerData().profession().matchesKey(VillagerProfession.LIBRARIAN)) {
                 ClientPlayNetworking.getSender()
                         .sendPacket(PlayerInteractEntityC2SPacket.interact(data.getVillager(),
                                 client.player.isSneaking(),
