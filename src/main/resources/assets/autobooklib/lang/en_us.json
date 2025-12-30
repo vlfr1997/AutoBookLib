@@ -10,5 +10,8 @@
     "error.autobooklib.generic": "Please target both librarian and lectern",
     "error.autobooklib.villager": "Please target a librarian and try again",
     "info.autobooklib.stopped": "Stopped",
-    "gui.autobooklib.title": "AutoBookLib GUI"
+    "gui.autobooklib.title": "AutoBookLib GUI",
+    "error.autobooklib.pickedIsNull": "Error: pickedItem is null",
+    "error.autobooklib.lecternIsNull": "Error: lectern or client is null",
+    "info.autobooklib.timeout": "Timed out waiting for interaction response, trying again..."
 }

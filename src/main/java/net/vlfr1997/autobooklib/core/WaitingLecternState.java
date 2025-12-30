@@ -7,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.ItemPickupAnimationS2CPacket;
+import net.minecraft.text.Text;
 import net.vlfr1997.autobooklib.data.AutoBookData;
 
 public class WaitingLecternState extends AutoBookState {
@@ -22,9 +23,25 @@ public class WaitingLecternState extends AutoBookState {
             MinecraftClient client = MinecraftClient.getInstance();
             Entity pickedItem = client.world.getEntityById(itemPickupAnimationS2CPacket.getEntityId());
 
-            if (data.getLecternBlock().getBlockPos().compareTo(pickedItem.getBlockPos()) <= 1) {// 1 = detection range
+            if(pickedItem == null) {
+                client.player.sendMessage(
+                    Text.translatable("error.autobooklib.pickedIsNull"),
+                    false
+                );
+            }
+
+            if (data.getLecternBlock() == null || client.world == null) {
+                client.player.sendMessage(
+                    Text.translatable("error.autobooklib.lecternIsNull"),
+                    false
+                );
+            }
+
+            if (data.getLecternBlock().getBlockPos().isWithinDistance(pickedItem.getBlockPos(), 2)) {// 1 = detection range
                 return new WaitingInventoryUpdateState(data);
             }
+
+            return super.onPacket(packet, ci);
         }
         return super.onPacket(packet, ci);
     }

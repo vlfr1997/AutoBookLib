@@ -4,8 +4,14 @@ import java.util.List;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.AxeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
@@ -13,6 +19,7 @@ import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket.Action;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.screen.sync.ItemStackHash;
 import net.minecraft.util.Hand;
@@ -79,5 +86,49 @@ public class AutoBookUtils {
             AutoBookUtils.setSelectedSlot(target);
         }
     }
+
+    public static int findBestUsableAxeSlot(
+            PlayerInventory inv,
+            BlockState state
+    ) {
+        int bestSlot = -1;
+        float bestSpeed = 0f;
+
+        for (int i = 0; i < inv.size(); i++) {
+            ItemStack stack = inv.getStack(i);
+            if (stack.isEmpty()) continue;
+            if (!(stack.getItem() instanceof AxeItem)) continue;
+
+            // durabilidade restante (>1)
+            int remaining = stack.getMaxDamage() - stack.getDamage();
+            if (remaining <= 1) continue;
+
+            float speed = stack.getMiningSpeedMultiplier(state);
+
+            if (speed > 1.0f) {
+                int efficiency = 0;
+                ItemEnchantmentsComponent enchants = stack.getEnchantments();
+
+                for (RegistryEntry<Enchantment> entry : enchants.getEnchantments()) {
+                    if (entry.matchesKey(Enchantments.EFFICIENCY)) {
+                        efficiency = enchants.getLevel(entry);
+                        break;
+                    }
+                }
+
+                if (efficiency > 0) {
+                    speed += efficiency * efficiency + 1;
+                }
+            }
+
+            if (speed > bestSpeed) {
+                bestSpeed = speed;
+                bestSlot = i;
+            }
+        }
+
+        return bestSlot;
+    }
+
 
 }

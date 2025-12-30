@@ -70,6 +70,7 @@ public class AutoBookGuiDescription extends LightweightGuiDescription {
                 destination.getSliderPrice().setValue(price);
             }
 
+
         };
 
         ArrayList<Enchantment> data = new ArrayList<>();
@@ -84,16 +85,18 @@ public class AutoBookGuiDescription extends LightweightGuiDescription {
 
         WGridPanel root = new WGridPanel();
         setRootPanel(root);
+
         root.setInsets(Insets.ROOT_PANEL);
 
-        WLabel label = new WLabel(Text.translatable("gui.autobooklib.title"), 0xFFFFFF);
+        WLabel label = new WLabel(Text.literal(client.getWindow().getHeight() + "px, " + client.getWindow().getScaledHeight() + "scaled" + client.getWindow().getScaleFactor()));
         label.setHorizontalAlignment(HorizontalAlignment.CENTER);
         root.add(label, 0, 0, 16, 1);
 
         WListPanel<Enchantment, EnchantmentList> list = new WListPanel<>(data, EnchantmentList::new, configurator);
-        list.setListItemHeight(2 * 18 + 9);
-
-        root.add(list, 0, 2, 16, 12);
+        list.setListItemHeight(2 * 18 + 9); // 2 sliders + padding
+        
+        // Adjust height based on window size
+        root.add(list, 0, 2, 16, 12 * client.getWindow().getScaledHeight() / 270);
 
         root.validate(this);
     }

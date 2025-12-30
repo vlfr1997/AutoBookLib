@@ -20,10 +20,12 @@ public class WaitingLibrarianState extends AutoBookState {
         VillagerEntity villager = (VillagerEntity) client.world.getEntityById(data.getVillager().getId());
         if (villager != null) {
             if (villager.getVillagerData().profession().matchesKey(VillagerProfession.LIBRARIAN)) {
-                ClientPlayNetworking.getSender()
+                client.execute(() -> 
+                    ClientPlayNetworking.getSender()
                         .sendPacket(PlayerInteractEntityC2SPacket.interact(data.getVillager(),
                                 client.player.isSneaking(),
-                                Hand.MAIN_HAND));
+                                Hand.MAIN_HAND))
+                    );
                 return new WaitingInteractionState(data);
             }
         } else {
