@@ -88,7 +88,7 @@ public class AutoBookGuiDescription extends LightweightGuiDescription {
 
         root.setInsets(Insets.ROOT_PANEL);
 
-        WLabel label = new WLabel(Text.literal(client.getWindow().getHeight() + "px, " + client.getWindow().getScaledHeight() + "scaled" + client.getWindow().getScaleFactor()));
+        WLabel label = new WLabel(Text.translatable("gui.autobooklib.title"));
         label.setHorizontalAlignment(HorizontalAlignment.CENTER);
         root.add(label, 0, 0, 16, 1);
 
